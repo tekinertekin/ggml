@@ -46,13 +46,16 @@ uint64_t ggml_graph_next_uid(void);
 // static_assert should be a #define, but if it's not,
 // fall back to the _Static_assert C11 keyword.
 // if C99 - static_assert is noop
+// in C23 static_assert is a keyword, so don't redefine it (-Wkeyword-macro)
 // ref: https://stackoverflow.com/a/53923785/4039976
 #ifndef __cplusplus
-    #ifndef static_assert
-        #if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201100L)
-            #define static_assert(cond, msg) _Static_assert(cond, msg)
-        #else
-            #define static_assert(cond, msg) struct global_scope_noop_trick
+    #if !defined(__STDC_VERSION__) || __STDC_VERSION__ < 202311L
+        #ifndef static_assert
+            #if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201100L)
+                #define static_assert(cond, msg) _Static_assert(cond, msg)
+            #else
+                #define static_assert(cond, msg) struct global_scope_noop_trick
+            #endif
         #endif
     #endif
 #endif
